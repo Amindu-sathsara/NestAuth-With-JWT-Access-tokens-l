@@ -1,10 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto } from './dto/login-user.dto';   //addded new
+import { SignInUserDto } from './dto/SingInUserData.dto';   //addded new
+import { AuthorizedUserResultDto } from './dto/Authorized-userResult.dto';
 
-type AuthInput = { username: string, password: string };
-type SignInData = { userId: number, username: string };
-type AuthResult = { accessToken: string, userId: number, username: string };
+//type AuthInput = { username: string, password: string };
+//type SignInData = { userId: number, username: string };
+//type AuthResult = { accessToken: string, userId: number, username: string };
 
 @Injectable()
 export class AuthService {
@@ -13,10 +16,10 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
-    async validateUser(input: AuthInput): Promise<SignInData | null> {
-        const user = await this.userService.findUserByName(input.username);
+    async validateUser(loginUserDto: LoginUserDto): Promise<SignInUserDto | null> {
+        const user = await this.userService.findUserByName(loginUserDto.username);
 
-        if (user && user.password === input.password) { // Replace with bcrypt comparison
+        if (user && user.password === loginUserDto.password) { // Replace with bcrypt comparison
             return {
                 userId: user.userId,
                 username: user.username,
@@ -25,8 +28,8 @@ export class AuthService {
         return null;
     }
 
-    async authenticateUser(input: AuthInput): Promise<AuthResult> {
-        const user = await this.validateUser(input);
+    async authenticateUser(loginUserDto: LoginUserDto): Promise<AuthorizedUserResultDto> {
+        const user = await this.validateUser(loginUserDto);
 
         if (!user) {
             throw new UnauthorizedException('The given username or password does not match any user in this platform');
@@ -35,7 +38,7 @@ export class AuthService {
         return this.generateAuthResult(user);
     }
 
-    async generateAuthResult(user: SignInData): Promise<AuthResult> {
+    async generateAuthResult(user: SignInUserDto): Promise<AuthorizedUserResultDto> {
         const tokenPayloadData = {
             sub: user.userId,
             username: user.username
