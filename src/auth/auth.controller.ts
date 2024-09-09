@@ -29,9 +29,25 @@ export class AuthController {
   }
 */
   // Protected endpoint to get user details
-  @UseGuards(AuthGuard)
+  /*@UseGuards(AuthGuard)
   @Get('user-details')
   async getUserDetails(@Request() request) {
     return request.user; // JWT payload should include user details
+  }*/
+
+  // Protected endpoint to get full user details
+  @UseGuards(AuthGuard)
+  @Get('user-details')
+  async getUserDetails(@Request() request) {
+    const userId = request.user.sub;  // Extract userId from JWT payload
+    console.log('Extracted userId:', userId);  // Log the extracted userId for debugging
+    return this.authService.getUserDetails(userId);  // Fetch full user details by userId
   }
+  
 }
+
+
+/*async getUserDetails(@Request() request) {
+  const userId = request.user.sub;  // Extract `userId` from JWT payload
+  return this.authService.getUserDetails(userId);  // Fetch user details using userId
+}*/

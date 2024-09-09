@@ -9,6 +9,7 @@ import { AuthorizedUserResultDto } from './dto/Authorized-userResult.dto';
 //type SignInData = { userId: number, username: string };
 //type AuthResult = { accessToken: string, userId: number, username: string };
 
+
 @Injectable()
 export class AuthService {
     constructor(
@@ -17,9 +18,9 @@ export class AuthService {
     ) {}
 
     async validateUser(loginUserDto: LoginUserDto): Promise<SignInUserDto | null> {
-        const user = await this.userService.findUserByName(loginUserDto.username);
+        const user = await this.userService.findUserByName(loginUserDto.username);  // Use `findUserByName`
 
-        if (user && user.password === loginUserDto.password) { // Replace with bcrypt comparison
+        if (user && user.password === loginUserDto.password) { // Replace with bcrypt comparison for security
             return {
                 userId: user.userId,
                 username: user.username,
@@ -40,11 +41,23 @@ export class AuthService {
 
     async generateAuthResult(user: SignInUserDto): Promise<AuthorizedUserResultDto> {
         const tokenPayloadData = {
-            sub: user.userId,
-            username: user.username
+          sub: user.userId,  // Ensure this is the correct userId
+          username: user.username
         };
-
+      
         const accessToken = await this.jwtService.signAsync(tokenPayloadData);
         return { accessToken, userId: user.userId, username: user.username };
+      }
+      
+
+    // Protected API for fetching full user details based on userId
+    async getUserDetails(userId: string): Promise<any> {
+        const user = await this.userService.findUserById(userId);
+
+        if (!user) {
+            throw new UnauthorizedException('User with userId ${userId} not found ');
+        }
+
+        return user;  // Returning full user details
     }
 }
